@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AGISCI — dimmi di cosa hai bisogno</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#0b1020;--ink:#f4f1ea;--muted:#a9a8b8;--line:rgba(244,241,234,.18);--accent:#ffb86b;--accent2:#ff7a8a;--ok:#7fe0b4}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;overflow:hidden}
+  /* calm aurora background */
+  .aurora{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+  .aurora i{position:absolute;width:60vmax;height:60vmax;border-radius:50%;filter:blur(90px);opacity:.38;will-change:transform}
+  .aurora i:nth-child(1){background:#3b4cca;left:-20vmax;top:-25vmax;animation:drift1 26s ease-in-out infinite alternate}
+  .aurora i:nth-child(2){background:#ff7a8a;right:-25vmax;top:10vmax;opacity:.22;animation:drift2 32s ease-in-out infinite alternate}
+  .aurora i:nth-child(3){background:#ffb86b;left:10vmax;bottom:-35vmax;opacity:.2;animation:drift3 38s ease-in-out infinite alternate}
+  @keyframes drift1{to{transform:translate(18vmax,12vmax)}} @keyframes drift2{to{transform:translate(-14vmax,16vmax)}} @keyframes drift3{to{transform:translate(12vmax,-14vmax)}}
+  @media (prefers-reduced-motion:reduce){.aurora i{animation:none}}
+
+  header{position:fixed;top:0;left:0;right:0;z-index:5;display:flex;align-items:center;justify-content:space-between;padding:24px 6vw}
+  .logo{font-family:Fraunces,serif;font-weight:600;font-size:1.5rem;letter-spacing:.04em;cursor:pointer}
+  .logo span{color:var(--accent)}
+  .count{font-size:.8rem;color:var(--muted);letter-spacing:.08em}
+  .progress{position:fixed;top:0;left:0;height:3px;width:0;z-index:6;background:linear-gradient(90deg,var(--accent),var(--accent2));transition:width .7s cubic-bezier(.2,.8,.2,1)}
+
+  main{position:relative;z-index:2;height:100%;display:flex;align-items:center;justify-content:center;padding:90px 7vw 60px}
+  .step{width:min(760px,100%);opacity:0;transform:translateY(26px);transition:opacity .55s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+  .step.in{opacity:1;transform:none}
+  .step.out{opacity:0;transform:translateY(-26px)}
+  .kicker{font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:18px}
+  h1{font-family:Fraunces,serif;font-weight:500;font-size:clamp(2rem,5.2vw,3.6rem);line-height:1.08;letter-spacing:-.015em}
+  .hint{margin-top:14px;color:var(--muted);font-size:1.05rem;line-height:1.5}
+
+  .field{margin-top:38px;display:flex;align-items:flex-end;gap:14px;border-bottom:1px solid var(--line);padding-bottom:10px;transition:border-color .3s}
+  .field:focus-within{border-color:var(--accent)}
+  .field textarea,.field input{flex:1;min-width:0;background:transparent;border:none;outline:none;color:var(--ink);resize:none;
+    font:300 clamp(1.2rem,2.4vw,1.6rem)/1.45 Inter,system-ui,sans-serif;caret-color:var(--accent);max-height:40vh}
+  .field ::placeholder{color:rgba(244,241,234,.32)}
+  .arrow{flex:none;width:46px;height:46px;border-radius:50%;border:1px solid var(--accent);background:transparent;color:var(--accent);font-size:1.2rem;cursor:pointer;
+    transition:background .3s,color .3s,transform .3s,opacity .3s;opacity:.45}
+  .arrow.on,.arrow:hover{opacity:1}
+  .arrow:hover{background:var(--accent);color:#1a1206;transform:translateX(3px)}
+  .meta{margin-top:12px;display:flex;justify-content:space-between;gap:16px;font-size:.88rem;color:var(--muted);min-height:1.3em}
+  .meta .warn{color:var(--accent2)}
+  .skip{background:none;border:none;color:var(--muted);font:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+  .skip:hover{color:var(--ink)}
+
+  .chips{margin-top:34px;display:flex;flex-wrap:wrap;gap:12px}
+  .chip{padding:14px 22px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--ink);font:400 1.05rem Inter,sans-serif;cursor:pointer;
+    transition:border-color .25s,background .25s,transform .25s}
+  .chip:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .chip.sel{background:var(--accent);border-color:var(--accent);color:#1a1206}
+  .chip kbd{font:500 .72rem Inter;opacity:.55;margin-right:8px}
+  .next{margin-top:26px;display:inline-flex;align-items:center;gap:10px;padding:14px 26px;border-radius:999px;border:none;background:var(--ink);color:var(--bg);
+    font:500 1rem Inter,sans-serif;cursor:pointer;transition:transform .25s,opacity .25s}
+  .next:hover{transform:translateX(3px)}
+  .next[disabled]{opacity:.35;cursor:default;transform:none}
+
+  .summary{margin-top:30px;padding:28px 30px;border-radius:22px;background:rgba(255,255,255,.06);border:1px solid var(--line);
+    font-size:1.12rem;line-height:1.65;max-height:46vh;overflow:auto}
+  .summary dt{font-size:.74rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin-top:14px}
+  .summary dt:first-child{margin-top:0}
+  .summary dd{margin-top:2px}
+  .row{margin-top:24px;display:flex;flex-wrap:wrap;gap:14px;align-items:center}
+  .ghost{background:none;border:1px solid var(--line);color:var(--ink);padding:13px 22px;border-radius:999px;font:400 1rem Inter,sans-serif;cursor:pointer}
+  .ghost:hover{border-color:var(--ink)}
+
+  .video{margin-top:34px;display:flex;align-items:center;gap:18px;padding:22px 26px;border-radius:22px;text-decoration:none;color:#1a1206;
+    background:linear-gradient(120deg,var(--accent),var(--accent2));box-shadow:0 20px 60px -20px rgba(255,122,138,.6);transition:transform .35s}
+  .video:hover{transform:translateY(-3px)}
+  .video b{display:block;font:600 1.25rem Fraunces,serif}
+  .video small{display:block;font-size:.95rem;opacity:.85;margin-top:2px}
+  .video .ic{flex:none;width:52px;height:52px;border-radius:50%;background:#1a1206;color:var(--accent);display:grid;place-items:center;font-size:1.4rem}
+  .or{margin-top:30px;color:var(--muted);font-size:1rem}
+  .alt{margin-top:22px;display:flex;flex-wrap:wrap;gap:12px}
+  .alt a{color:var(--ink);text-decoration:none;border:1px solid var(--line);padding:12px 20px;border-radius:999px;font-size:.98rem}
+  .alt a:hover{border-color:var(--ok);color:var(--ok)}
+
+  .back{position:fixed;left:6vw;bottom:26px;z-index:5;background:none;border:none;color:var(--muted);font:400 .95rem Inter,sans-serif;cursor:pointer}
+  .back:hover{color:var(--ink)}
+  .back[hidden]{display:none}
+  .tick{display:inline-grid;place-items:center;width:64px;height:64px;border-radius:50%;background:var(--ok);color:#06281a;font-size:1.8rem;margin-bottom:26px}
+  .brand{color:var(--accent);font-style:italic}
+  .mic{flex:none;width:46px;height:46px;border-radius:50%;border:1px solid var(--line);background:transparent;color:var(--ink);cursor:pointer;display:grid;place-items:center;transition:border-color .3s,color .3s,background .3s}
+  .mic:hover{border-color:var(--accent);color:var(--accent)}
+  .mic.rec{background:var(--accent2);border-color:var(--accent2);color:#1a1206;animation:pulse 1.4s ease-out infinite}
+  @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(255,122,138,.55)}100%{box-shadow:0 0 0 14px rgba(255,122,138,0)}}
+  .consent{display:flex;gap:12px;align-items:flex-start;margin-top:30px;font-size:.9rem;color:var(--muted);line-height:1.5;cursor:pointer;max-width:62ch}
+  .consent input{flex:none;width:18px;height:18px;margin-top:2px;accent-color:var(--accent);cursor:pointer}
+  .consent.warn{color:var(--accent2)}
+  .consent+.video{margin-top:16px}
+  .video.off{opacity:.5;filter:saturate(.5)}
+  .foot{position:fixed;left:0;right:0;bottom:28px;z-index:4;text-align:center;font-size:.8rem;color:var(--muted);pointer-events:none;padding:0 22vw}
+  @media (max-width:640px){ .foot{bottom:10px;padding:0 20px;font-size:.74rem} .back,.plink.fixed{bottom:38px!important} main{padding-bottom:80px} }
+  .note{margin-top:20px;font-size:.84rem;color:var(--muted);line-height:1.55;max-width:60ch}
+  .plink{background:none;border:none;color:var(--muted);font:inherit;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+  .plink:hover{color:var(--ink)}
+  .plink.fixed{position:fixed;right:6vw;bottom:26px;z-index:5;font-size:.85rem;text-decoration:none}
+  .modal{position:fixed;inset:0;z-index:20;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(5,8,18,.74);backdrop-filter:blur(6px)}
+  .modal.open{display:flex}
+  .modal .box{position:relative;width:min(680px,100%);max-height:86vh;overflow:auto;background:#121830;border:1px solid var(--line);border-radius:22px;padding:34px 34px 28px;font-size:.96rem;line-height:1.62}
+  .modal h2{font:500 1.7rem/1.15 Fraunces,serif;margin-bottom:4px;padding-right:40px}
+  .modal .sub{color:var(--muted);font-size:.85rem}
+  .modal h3{font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--accent);margin:22px 0 4px;font-weight:500}
+  .modal p,.modal li{color:#dcd9e3}
+  .modal ul{padding-left:18px}
+  .modal a{color:var(--accent)}
+  .modal .x{position:absolute;top:18px;right:18px;width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:none;color:var(--ink);font-size:1.1rem;cursor:pointer}
+  .modal .x:hover{border-color:var(--ink)}
+  @media (max-width:640px){ .modal .box{padding:28px 22px 22px} .plink.fixed{bottom:26px} }
+  @media (max-width:640px){ main{align-items:flex-start;padding-top:110px} .chip{padding:12px 18px;font-size:1rem} .summary{padding:22px} }
+</style>
+</head>
+<body>
+<div class="aurora"><i></i><i></i><i></i></div>
+<div class="progress" id="progress"></div>
+<header>
+  <div class="logo" id="logo">AGISCI<span>.</span></div>
+  <div class="count" id="count"></div>
+</header>
+<main><section class="step" id="step"></section></main>
+<button class="back" id="back" hidden>← indietro</button>
+<button class="plink fixed" data-privacy>Privacy</button>
+<footer class="foot">Dietro AGISCI c’è un laureato in psicologia che fa business online.</footer>
+<div class="modal" id="privacy" role="dialog" aria-modal="true" aria-labelledby="ptitle"><div class="box" id="pbox"></div></div>
+
+<script>
+/* ================= CONFIGURAZIONE ================= */
+const CONFIG = {
+  nome:      "AGISCI",
+  telefono:  "+393406431103",
+  whatsapp:  "https://wa.me/393406431103",
+  jitsi:     "https://meet.jit.si/",
+  api:       "/api/messaggio",
+  eventi:    "/api/evento",
+  /* videochiamata a pagamento */
+  prenota:   "",          // ← link di prenotazione + pagamento (es. Cal.com o Calendly con Stripe). Vuoto = prenotazione via WhatsApp
+  prezzoVideo: "10 €",
+  durataVideo: "15 minuti",
+  /* privacy */
+  titolare:  "Luca Bagnarol",
+  email:     "",          // ← metti qui la tua email per le richieste privacy
+  mesi:      12,          // per quanti mesi conservi le richieste
+  aggiornata:"novembre 2026"
+};
+/* ================================================== */
+
+(function(){
+  const $ = id => document.getElementById(id);
+  const stepEl = $('step'), backBtn = $('back');
+  const MID = Date.now().toString(36) + Math.random().toString(36).slice(2,7);   // one id for this request
+  const T0 = performance.now();
+  const A = {};                                                                     // answers
+
+  const pick = arr => arr[Math.floor(Math.random()*arr.length)];
+  const STEPS = [
+    { id:'bisogno', type:'text', q:'Dimmi di cosa hai bisogno.',
+      note:'Le risposte si salvano mentre procedi, solo per poterti rispondere. <button class="plink" data-privacy>Come tratto i tuoi dati</button>',
+      ex:['il mio negozio non vende abbastanza online','devo trovare inquilini affidabili per un appartamento','il mio computer è lentissimo e perdo ore',
+          'ho una pratica burocratica bloccata da mesi','voglio aprire una mia attività ma non so da dove partire','devo organizzare un evento per 80 persone'], required:true },
+    { id:'ambito', type:'chips', multi:true, kicker:'Per capirci', q:'In che ambito rientra?', hint:'Puoi sceglierne più di uno.',
+      options:['Lavoro o azienda','Casa','Tecnologia','Pratiche e burocrazia','Soldi e acquisti','Vita personale','Altro'] },
+    { id:'da_quando', type:'chips', kicker:'Il tempo', q:'Da quanto ci stai dietro?', options:['È appena successo','Da qualche settimana','Da mesi','Da sempre'] },
+    { id:'urgenza', type:'chips', kicker:'La fretta', q:'Quanto è urgente?', options:['Può aspettare','Entro questo mese','Questa settimana','Oggi stesso'] },
+    { id:'provato', type:'text', kicker:'Fin qui', q:'Cosa hai già provato?', hint:'Anche «niente» va benissimo.', ex:['niente, non so da dove partire','ho chiesto in giro ma nessuno mi ha aiutato','ci ho provato da solo ma mi sono bloccato'], optional:true },
+    { id:'ideale', type:'text', kicker:'Immagina', q:'È tutto risolto. Com’è la tua giornata adesso?', hint:'Descrivi il risultato che vuoi, non il come.', ex:['ho più clienti e meno pensieri','la casa è affittata e non devo occuparmene','finalmente ho tempo per altro'], optional:true },
+    { id:'budget', type:'chips', kicker:'Con trasparenza', q:'Hai un budget in mente?', options:['Non lo so ancora','Meno di 100 €','100 – 500 €','500 – 2.000 €','Oltre 2.000 €'] },
+    { id:'nome', type:'text', kicker:'Quasi fatto', q:'Come ti chiami?', hint:'Solo il nome, per sapere come chiamarti.', ex:['Giulia','Marco','Sara'], optional:true, short:true },
+    { id:'riepilogo', type:'summary' },
+    { id:'contatto', type:'contact' },
+    { id:'fine', type:'end' }
+  ];
+  let i = 0, lastStep = 0;
+
+  // ---------- delivery & tracking ----------
+  function post(url, obj){
+    const body = JSON.stringify(obj);
+    try {
+      if (url === CONFIG.eventi && navigator.sendBeacon && navigator.sendBeacon(url, new Blob([body],{type:'application/json'}))) return;
+      fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body,keepalive:true})
+        .then(r=>{ if(!r.ok) throw 0; if(url===CONFIG.api){ try{localStorage.removeItem('agisci_pending');}catch(_){} } })
+        .catch(()=>{ if(url===CONFIG.api){ try{localStorage.setItem('agisci_pending',body);}catch(_){} } });
+    } catch(_){}
+  }
+  try { const p = localStorage.getItem('agisci_pending'); if (p) post(CONFIG.api, JSON.parse(p)); } catch(_){}
+  const track = (e,d) => post(CONFIG.eventi, {s:MID, e, d:d||{}, ms:Math.round(performance.now()-T0)});
+  (function(){ let ref=''; try{ ref = document.referrer ? new URL(document.referrer).hostname : ''; }catch(_){}
+    const q = new URLSearchParams(location.search);
+    track('visita',{ref, dispositivo: matchMedia('(max-width:640px)').matches?'mobile':'desktop', utm:q.get('utm_source')||'', lingua:navigator.language||''}); })();
+  addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden') track('uscita',{passo_max:lastStep+1}); });
+
+  function summaryText(){
+    const L = [];
+    if (A.nome) L.push('Nome: ' + A.nome);
+    L.push('Bisogno: ' + (A.bisogno || '—'));
+    if (A.ambito && A.ambito.length) L.push('Ambito: ' + A.ambito.join(', '));
+    if (A.da_quando) L.push('Da quando: ' + A.da_quando);
+    if (A.urgenza) L.push('Urgenza: ' + A.urgenza);
+    if (A.provato) L.push('Già provato: ' + A.provato);
+    if (A.ideale) L.push('Risultato desiderato: ' + A.ideale);
+    if (A.budget) L.push('Budget: ' + A.budget);
+    return L.join('\n');
+  }
+  // every answer is saved silently; you are alerted at the first answer and when a contact arrives
+  function save(alert, contatto){
+    post(CONFIG.api, { id:MID, servizio:(A.ambito||[]).join(', ') || 'da capire', messaggio:summaryText(), contatto:contatto||'',
+      silenzioso: !alert, quando:new Date().toISOString(), pagina:location.href });
+  }
+
+  // ---------- rendering ----------
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const QUESTIONS = STEPS.filter(s => s.type==='text' || s.type==='chips').length;
+  function header(){
+    const qIndex = STEPS.slice(0, i+1).filter(s => s.type==='text'||s.type==='chips').length;
+    $('progress').style.width = Math.min(100, (i/(STEPS.length-1))*100) + '%';
+    $('count').textContent = (STEPS[i].type==='text'||STEPS[i].type==='chips') ? qIndex + ' / ' + QUESTIONS : '';
+    backBtn.hidden = i === 0 || STEPS[i].type === 'end';
+  }
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  let REC = null;
+  const stopRec = () => { if (REC){ try{ REC.stop(); }catch(_){} REC = null; } };
+  function go(n){
+    if (n < 0 || n >= STEPS.length) return;
+    stopRec();
+    const dir = n > i ? 'avanti' : 'indietro';
+    stepEl.classList.remove('in'); stepEl.classList.add('out');
+    setTimeout(() => {
+      i = n; lastStep = Math.max(lastStep, i);
+      render(); header();
+      stepEl.classList.remove('out'); void stepEl.offsetWidth; stepEl.classList.add('in');
+      track(dir === 'avanti' ? 'passo' : 'indietro', {n:i+1, id:STEPS[i].id});
+    }, 320);
+  }
+  function next(){ go(i+1); }
+
+  function render(){
+    const s = STEPS[i];
+    if (s.type === 'text'){
+      const val = A[s.id] || '';
+      stepEl.innerHTML = `${s.kicker?`<div class="kicker">${esc(s.kicker)}</div>`:''}<h1>${s.brand?`<span class="brand">${esc(s.brand)}</span> `:''}${esc(s.q)}</h1>${s.hint?`<p class="hint">${esc(s.hint)}</p>`:''}
+        <div class="field"><textarea id="inp" rows="1" maxlength="${s.short?60:600}" placeholder="Es. ${esc(pick(s.ex))}">${esc(val)}</textarea>
+        ${SR?'<button class="mic" id="mic" aria-label="Rispondi a voce" title="Rispondi a voce"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>':''}
+        <button class="arrow ${val?'on':''}" id="go" aria-label="Avanti">→</button></div>
+        <div class="meta"><span id="msg">${SR?'Scrivi, oppure tocca il microfono e parla':'Premi Invio per andare avanti'}</span>${s.optional?'<button class="skip" id="skip">salta</button>':''}</div>${s.note?`<p class="note">${s.note}</p>`:''}`;
+      const inp = $('inp'), btn = $('go'), msg = $('msg');
+      const fit = () => { inp.style.height = 'auto'; inp.style.height = inp.scrollHeight + 'px'; };
+      fit(); setTimeout(() => inp.focus({preventScroll:true}), 350);
+      let started = false;
+      inp.addEventListener('input', () => { fit(); btn.classList.toggle('on', !!inp.value.trim()); msg.classList.remove('warn'); msg.textContent = 'Premi Invio per andare avanti';
+        if (!started){ started = true; track('inizia_a_scrivere',{id:s.id}); } });
+      const submit = () => {
+        const v = inp.value.trim();
+        if (!v && !s.optional){ msg.textContent = 'Scrivi anche solo una riga.'; msg.classList.add('warn'); inp.focus(); return; }
+        A[s.id] = v;
+        const first = s.id === 'bisogno' && !A._alerted;
+        if (first){ A._alerted = true; track('messaggio',{lunghezza:v.length}); }
+        save(first);
+        next();
+      };
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey){ e.preventDefault(); submit(); } });
+      btn.onclick = submit;
+      if ($('skip')) $('skip').onclick = () => { A[s.id] = ''; next(); };
+      if (SR && $('mic')){
+        const mic = $('mic');
+        mic.onclick = () => {
+          if (REC){ stopRec(); return; }
+          const r = new SR(); REC = r;
+          r.lang = 'it-IT'; r.interimResults = true; r.continuous = true;
+          const base = inp.value.trim() ? inp.value.trim() + ' ' : '';
+          r.onresult = e => { let t = ''; for (let k = 0; k < e.results.length; k++) t += e.results[k][0].transcript;
+            inp.value = (base + t).slice(0, inp.maxLength); fit(); btn.classList.toggle('on', !!inp.value.trim()); };
+          r.onerror = ev => { msg.classList.add('warn'); msg.textContent =
+            ev.error === 'not-allowed' ? 'Non ho accesso al microfono: consentilo dalle impostazioni del browser, oppure usa il microfono della tastiera.'
+            : ev.error === 'no-speech' ? 'Non ho sentito niente, riprova.'
+            : 'La dettatura qui non è disponibile: usa il microfono della tua tastiera, oppure scrivi.'; };
+          r.onend = () => { if (REC === r) REC = null; mic.classList.remove('rec');
+            if (!msg.classList.contains('warn')) msg.textContent = inp.value.trim() ? 'Controlla il testo e premi Invio' : 'Scrivi, oppure tocca il microfono e parla'; };
+          try { r.start(); mic.classList.add('rec'); msg.classList.remove('warn'); msg.textContent = 'Ti ascolto… tocca di nuovo il microfono quando hai finito.';
+            if (!started){ started = true; track('inizia_a_scrivere',{id:s.id}); } track('voce',{id:s.id}); }
+          catch(_){ REC = null; }
+        };
+      }
+    }
+    else if (s.type === 'chips'){
+      const cur = A[s.id] || (s.multi ? [] : '');
+      stepEl.innerHTML = `<div class="kicker">${esc(s.kicker)}</div><h1>${esc(s.q)}</h1>${s.hint?`<p class="hint">${esc(s.hint)}</p>`:''}
+        <div class="chips">${s.options.map((o,k)=>`<button class="chip ${(s.multi?cur.includes(o):cur===o)?'sel':''}" data-o="${esc(o)}"><kbd>${k+1}</kbd>${esc(o)}</button>`).join('')}</div>
+        ${s.multi?`<button class="next" id="go" ${cur.length?'':'disabled'}>Avanti →</button>`:''}`;
+      const chips = [...stepEl.querySelectorAll('.chip')];
+      const choose = el => {
+        const o = el.dataset.o;
+        if (s.multi){
+          const set = new Set(A[s.id] || []); set.has(o) ? set.delete(o) : set.add(o); A[s.id] = [...set];
+          el.classList.toggle('sel'); $('go').disabled = !A[s.id].length;
+        } else {
+          A[s.id] = o; chips.forEach(c => c.classList.toggle('sel', c === el));
+          save(false); setTimeout(next, 380);
+        }
+      };
+      chips.forEach(c => c.onclick = () => choose(c));
+      if (s.multi) $('go').onclick = () => { save(false); next(); };
+      stepEl.onkeydown = null;
+      keyChoose = e => { const k = parseInt(e.key,10); if (k >= 1 && k <= chips.length) choose(chips[k-1]); if (e.key==='Enter' && s.multi && !$('go').disabled) $('go').click(); };
+    }
+    else if (s.type === 'summary'){
+      const items = [
+        ['Ti chiami', A.nome], ['Hai bisogno di', A.bisogno], ['Ambito', (A.ambito||[]).join(', ')], ['Da quando', A.da_quando],
+        ['Urgenza', A.urgenza], ['Hai già provato', A.provato], ['Il risultato che vuoi', A.ideale], ['Budget', A.budget]
+      ].filter(([,v]) => v);
+      stepEl.innerHTML = `<div class="kicker">Ecco cosa ho capito</div><h1>${A.nome ? esc(A.nome)+', è' : 'È'} tutto qui?</h1>
+        <dl class="summary">${items.map(([k,v])=>`<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join('')}</dl>
+        <div class="row"><button class="next" id="go">Sì, è così →</button><button class="ghost" id="fix">Voglio correggere</button></div>`;
+      $('go').onclick = () => { track('riepilogo'); next(); };
+      $('fix').onclick = () => go(0);
+    }
+    else if (s.type === 'contact'){
+      const prenota = CONFIG.prenota || (CONFIG.whatsapp + '?text=' + encodeURIComponent('Ciao! Vorrei prenotare la videochiamata di ' + CONFIG.durataVideo + ' (' + CONFIG.prezzoVideo + ').\n\n' + summaryText()));
+      const wa = CONFIG.whatsapp + '?text=' + encodeURIComponent('Ciao! Ti scrivo da ' + CONFIG.nome + '.\n\n' + summaryText());
+      stepEl.innerHTML = `<div class="kicker">Ultimo passo</div><h1>Come preferisci che ci sentiamo?</h1>
+        <p class="hint">In ogni caso ti rispondo. E se non sono io a poterlo risolvere, ti dico chi può.</p>
+        <label class="consent" id="okl"><input type="checkbox" id="ok"> Chiedo che la videochiamata si svolga nell’orario che scelgo e so che, una volta fatta, non potrò più recedere.</label>
+        <a class="video off" id="video" href="${esc(prenota)}" target="_blank" rel="noopener"><span class="ic">🎥</span>
+          <span><b>Videochiamata di ${esc(CONFIG.durataVideo)} · ${esc(CONFIG.prezzoVideo)}</b><small>Consulenza su business, organizzazione, competenze e strumenti digitali. Scegli l’orario, paghi online e ci vediamo faccia a faccia.</small></span></a>
+        <p class="note" style="margin-top:12px"><b style="color:var(--ok);font-weight:500">Garanzia doppio rimborso:</b> se prenoti e non ti rispondo entro un’ora, o non mi presento all’orario fissato, ti restituisco il doppio di quello che hai pagato. Orari: dal lunedì al venerdì, dalle 15 alle 18; per le richieste fuori orario, l’ora parte dalle 15 del primo giorno lavorativo successivo.</p>
+        <p class="or">Oppure lasciami il tuo numero o la tua email e ti ricontatto io:</p>
+        <div class="field"><input id="inp" type="text" inputmode="email" maxlength="80" placeholder="Numero di telefono o email" autocomplete="email">
+          <button class="arrow" id="go" aria-label="Invia">→</button></div>
+        <div class="meta"><span id="msg">Lo userò solo per risponderti.</span></div>
+        <div class="alt"><a href="${wa}" target="_blank" rel="noopener" id="wa">Scrivimi su WhatsApp ↗</a><a href="tel:${CONFIG.telefono}" id="call">Chiamami: ${esc(CONFIG.telefono.replace('+39',''))}</a></div>
+        <p class="note">Lasciando un recapito, avviando la videochiamata o scrivendomi, mi permetti di usare le tue risposte per ricontattarti. Niente pubblicità, niente cessione a terzi. <button class="plink" data-privacy>Informativa privacy</button></p>`;
+      const inp = $('inp'), btn = $('go'), msg = $('msg');
+      inp.addEventListener('input', () => { btn.classList.toggle('on', !!inp.value.trim()); msg.classList.remove('warn'); msg.textContent = 'Lo userò solo per risponderti.'; });
+      const send = () => {
+        const t = inp.value.trim();
+        const isMail = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(t);
+        const isPhone = t.replace(/[^\d]/g,'').length >= 8 && /^[\d\s+().-]+$/.test(t);
+        if (!isMail && !isPhone){ msg.textContent = 'Scrivi un numero di telefono o un’email validi.'; msg.classList.add('warn'); inp.focus(); return; }
+        A._contatto = t; save(true, t); track('contatto',{tipo:isMail?'email':'telefono'}); A._via = 'recapito'; next();
+      };
+      inp.addEventListener('keydown', e => { if (e.key === 'Enter'){ e.preventDefault(); send(); } });
+      btn.onclick = send;
+      const ok = $('ok'), vid = $('video');
+      ok.onchange = () => { vid.classList.toggle('off', !ok.checked); $('okl').classList.remove('warn'); };
+      vid.addEventListener('click', e => {
+        if (!ok.checked){ e.preventDefault(); $('okl').classList.add('warn'); ok.focus(); return; }
+        post(CONFIG.api, { id:MID, servizio:(A.ambito||[]).join(', ') || 'da capire', messaggio:'🎥 Sta prenotando la videochiamata a pagamento (' + CONFIG.prezzoVideo + ')\n\n' + summaryText(),
+          contatto:'prenotazione videochiamata', quando:new Date().toISOString(), pagina:location.href });
+        track('videochiamata'); A._via = 'video'; setTimeout(next, 400);
+      });
+      $('wa').addEventListener('click', () => { track('whatsapp'); A._via = 'whatsapp'; setTimeout(next, 400); });
+      $('call').addEventListener('click', () => { track('chiama'); A._via = 'chiamata'; setTimeout(next, 400); });
+    }
+    else if (s.type === 'end'){
+      const nome = A.nome ? ', ' + esc(A.nome) : '';
+      const line = { video: 'Completa la prenotazione nella pagina che si è aperta: ci vediamo all’orario che scegli.',
+                     recapito: 'Ti ricontatto io a breve, ' + (A._contatto && A._contatto.includes('@') ? 'via email.' : 'al numero che mi hai lasciato.'),
+                     whatsapp: 'Ci sentiamo su WhatsApp.', chiamata: 'A tra un attimo al telefono.' }[A._via] || 'Ci sentiamo presto.';
+      stepEl.innerHTML = `<div class="tick">✓</div><h1>Fatto${nome}.</h1>
+        <p class="hint" style="font-size:1.25rem;color:var(--ink);max-width:36ch">Hai fatto la parte più difficile: dire cosa ti serve. ${line}</p>`;
+      $('progress').style.width = '100%';
+    }
+  }
+
+  // ---------- privacy notice ----------
+  const modal = $('privacy');
+  function privacyHTML(){
+    const tel = CONFIG.telefono.replace('+39','+39 ').replace(/(\d{3})(\d{3})(\d{4})$/,'$1 $2 $3');
+    const contatti = (CONFIG.email ? `<a href="mailto:${esc(CONFIG.email)}">${esc(CONFIG.email)}</a> · ` : '') + `tel. e WhatsApp ${esc(tel)}`;
+    return `<button class="x" id="px" aria-label="Chiudi">✕</button>
+      <h2 id="ptitle">I tuoi dati, in parole semplici</h2><p class="sub">Informativa privacy (art. 13 GDPR) · aggiornata a ${esc(CONFIG.aggiornata)}</p>
+      <h3>Chi sono</h3><p>Sono ${esc(CONFIG.titolare)} e mi occupo io dei tuoi dati. Per qualsiasi cosa: ${contatti}.</p>
+      <h3>Cosa tengo</h3><p>Solo quello che mi racconti: le tue risposte, il nome se vuoi darmelo, il numero o l’email se me li lasci. Salvo ogni risposta man mano, così non perdi niente anche se ti fermi a metà. Come ogni sito, il server vede anche l’indirizzo IP. Niente cookie, niente profilazione: conto solo le visite, in forma anonima.</p>
+      <h3>A cosa mi servono</h3><p>Solo a risponderti e, se posso, a proporti una soluzione. Sei tu a chiedermelo, ed è questo che mi permette di usarli (art. 6.1.b GDPR). Niente pubblicità: non li vendo e non li passo a nessuno.</p>
+      <h3>Una cosa che ti chiedo</h3><p>Se non serve davvero per spiegarmi il problema, lascia fuori le informazioni sulla salute e gli altri dati molto personali.</p>
+      <h3>Chi li vede</h3><p>Solo io. Per far funzionare il sito uso qualche servizio esterno:</p>
+      <ul><li>Hetzner, in Germania, dove sta il sito;</li>
+        <li>Telegram, che mi avvisa sul telefono quando mi scrivi;</li>
+        <li>Google Fonts, da cui arrivano i caratteri del sito (Google vede il tuo IP);</li>
+        <li>il servizio di riconoscimento vocale del tuo browser (per esempio Google su Chrome), solo se rispondi a voce: a me arriva il testo, mai l’audio;</li>
+        <li>il servizio di prenotazione e pagamento, se prenoti la videochiamata, e WhatsApp, se scegli di scrivermi lì.</li></ul>
+      <p>Qualcuno di questi può lavorare anche fuori dall’Europa, sempre con le tutele previste dalla legge.</p>
+      <h3>Per quanto tempo</h3><p>Al massimo ${CONFIG.mesi} mesi dall’ultima volta che ci sentiamo, poi cancello tutto. Prima, se me lo chiedi.</p>
+      <h3>Se la connessione salta</h3><p>Se l’invio non va a buon fine, il tuo browser tiene da parte la richiesta e me la rimanda alla visita dopo. Serve solo a non perdere il tuo messaggio, non a seguirti.</p>
+      <h3>Cosa puoi chiedermi</h3><p>Quando vuoi puoi chiedermi di vedere i tuoi dati, correggerli, cancellarli, averne una copia o smettere di usarli (artt. 15–21 GDPR): basta scrivermi. E se pensi che abbia sbagliato qualcosa, puoi rivolgerti al Garante della privacy (<a href="https://www.garanteprivacy.it" target="_blank" rel="noopener">garanteprivacy.it</a>).</p>`;
+  }
+  let lastFocus = null;
+  function openPrivacy(){ lastFocus = document.activeElement; $('pbox').innerHTML = privacyHTML(); modal.classList.add('open'); $('pbox').scrollTop = 0; $('px').focus(); $('px').onclick = closePrivacy; track('privacy'); }
+  function closePrivacy(){ modal.classList.remove('open'); if (lastFocus && lastFocus.focus) lastFocus.focus({preventScroll:true}); }
+  document.addEventListener('click', e => { if (e.target.closest('[data-privacy]')){ e.preventDefault(); openPrivacy(); } else if (e.target === modal) closePrivacy(); });
+  addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) closePrivacy(); }, true);
+
+  let keyChoose = null;
+  addEventListener('keydown', e => { if (modal.classList.contains('open')) return; if (STEPS[i].type === 'chips' && keyChoose && !e.target.closest('textarea,input')) keyChoose(e); });
+  backBtn.onclick = () => go(i-1);
+  $('logo').onclick = () => { if (STEPS[i].type !== 'end') go(0); };
+
+  render(); header();
+  requestAnimationFrame(() => stepEl.classList.add('in'));
+})();
+</script>
+</body>
+</html>
