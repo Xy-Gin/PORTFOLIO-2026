@@ -44,6 +44,11 @@
   .thumb{height:220px;position:relative;overflow:hidden}
   .thumb.mesztis{background:radial-gradient(circle at 50% 55%,#7dffb0 0 6%,transparent 7%),repeating-radial-gradient(circle at 50% 55%,rgba(125,255,176,.55) 0 2px,transparent 2px 26px),linear-gradient(160deg,#03080a,#1a0610 70%,#2b0b3a)}
   .thumb.agisci{background:radial-gradient(60% 80% at 15% 20%,#3b4cca 0,transparent 60%),radial-gradient(50% 70% at 85% 40%,#ff7a8a 0,transparent 60%),radial-gradient(60% 70% at 40% 110%,#ffb86b 0,transparent 60%),#0b1020}
+  .thumb.gianni{background:#0b1815;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:36px 24px 18px}
+  .gianni-title{color:#ffff00;font-weight:700;font-size:clamp(.8rem,2vw,1.1rem);letter-spacing:.12em}
+  .gianni-doors{display:flex;gap:8px;width:min(280px,90%);height:110px}
+  .gianni-doors i{flex:1;position:relative;border-top:8px solid #7a8184;border-bottom:4px solid #8c969a;background:linear-gradient(90deg,#596166,#b7bdbe 25%,#858e91 49%,#3c4346 50%,#aab2b5 53%,#737e83)}
+  .gianni-doors i:after{content:"";position:absolute;top:55%;left:25%;right:25%;height:4px;background:repeating-linear-gradient(135deg,#ffff00 0 4px,#111 4px 8px)}
   .thumb.buyer{background:linear-gradient(135deg,#2d3b2a,#5a2a2f);display:flex;align-items:flex-end;padding:22px;gap:8px}
   .thumb.buyer i{flex:1;background:rgba(255,255,255,.22);border-radius:4px 4px 0 0}
   .thumb.wa{background:linear-gradient(135deg,#0f3d2e,#1fa36b)}
@@ -96,6 +101,14 @@
   <section id="lavori">
     <div class="head"><h2>Lavori</h2><p>Progetti reali, alcuni online e altri riservati ai clienti.</p></div>
     <div class="grid">
+      <a class="work" href="/gianni-automazioni/">
+        <div class="thumb gianni"><span class="tag">Sito interattivo</span><span class="gianni-title" aria-hidden="true">GIANNI AUTOMAZIONI</span><span class="gianni-doors" aria-hidden="true"><i></i><i></i><i></i><i></i></span></div>
+        <div class="body">
+          <h3>Gianni Automazioni</h3>
+          <p>Siti web, software intelligenti e gestione social: un’esperienza interattiva con ascensori animati, prezzi e contatti diretti.</p>
+          <div class="meta"><span>Web design · animazioni · software</span><span class="go">Apri →</span></div>
+        </div>
+      </a>
       <a class="work" href="/mesztis/">
         <div class="thumb mesztis"><span class="tag">Online</span></div>
         <div class="body">
