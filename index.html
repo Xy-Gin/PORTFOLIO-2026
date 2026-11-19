@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Luca Bagnarol — siti, software e automazioni</title>
+<meta name="description" content="Portfolio di Luca Bagnarol: siti web, software su misura e automazioni con l'intelligenza artificiale, progettati partendo da come pensano e decidono le persone.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,500;9..144,600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#f6f2ea;--ink:#1d1a16;--muted:#6f675c;--line:rgba(29,26,22,.14);--accent:#c8553d;--card:#fffdf8}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:inherit}
+  .wrap{width:min(1080px,88vw);margin:0 auto}
+
+  header{display:flex;justify-content:space-between;align-items:center;padding:28px 0}
+  .mark{font-family:Fraunces,serif;font-weight:600;font-size:1.2rem;text-decoration:none}
+  .mark span{color:var(--accent)}
+  nav a{margin-left:26px;text-decoration:none;font-size:.92rem;color:var(--muted)}
+  nav a:hover{color:var(--ink)}
+
+  .hero{padding:9vh 0 11vh;border-bottom:1px solid var(--line)}
+  .kicker{font-size:.78rem;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin-bottom:22px}
+  h1{font-family:Fraunces,serif;font-weight:300;font-size:clamp(2.6rem,7vw,5.6rem);line-height:1.02;letter-spacing:-.02em;max-width:14ch}
+  h1 em{font-style:italic;font-weight:500;color:var(--accent)}
+  .lead{margin-top:30px;max-width:56ch;font-size:clamp(1.05rem,1.6vw,1.25rem);color:var(--muted)}
+  .cta{margin-top:38px;display:flex;flex-wrap:wrap;gap:14px}
+  .btn{display:inline-flex;align-items:center;gap:10px;padding:15px 26px;border-radius:999px;text-decoration:none;font-weight:500;font-size:.98rem;transition:transform .25s,background .25s}
+  .btn.main{background:var(--ink);color:var(--bg)}
+  .btn.main:hover{transform:translateY(-2px)}
+  .btn.ghost{border:1px solid var(--line)}
+  .btn.ghost:hover{border-color:var(--ink)}
+
+  section{padding:12vh 0;border-bottom:1px solid var(--line)}
+  .head{display:flex;justify-content:space-between;align-items:baseline;gap:20px;margin-bottom:48px;flex-wrap:wrap}
+  h2{font-family:Fraunces,serif;font-weight:500;font-size:clamp(1.8rem,3.6vw,2.8rem);letter-spacing:-.01em}
+  .head p{color:var(--muted);max-width:40ch}
+
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:22px}
+  .work{position:relative;display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:22px;overflow:hidden;text-decoration:none;transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s}
+  a.work:hover{transform:translateY(-4px);box-shadow:0 24px 50px -28px rgba(29,26,22,.35)}
+  .thumb{height:220px;position:relative;overflow:hidden}
+  .thumb.mesztis{background:radial-gradient(circle at 50% 55%,#7dffb0 0 6%,transparent 7%),repeating-radial-gradient(circle at 50% 55%,rgba(125,255,176,.55) 0 2px,transparent 2px 26px),linear-gradient(160deg,#03080a,#1a0610 70%,#2b0b3a)}
+  .thumb.agisci{background:radial-gradient(60% 80% at 15% 20%,#3b4cca 0,transparent 60%),radial-gradient(50% 70% at 85% 40%,#ff7a8a 0,transparent 60%),radial-gradient(60% 70% at 40% 110%,#ffb86b 0,transparent 60%),#0b1020}
+  .thumb.buyer{background:linear-gradient(135deg,#2d3b2a,#5a2a2f);display:flex;align-items:flex-end;padding:22px;gap:8px}
+  .thumb.buyer i{flex:1;background:rgba(255,255,255,.22);border-radius:4px 4px 0 0}
+  .thumb.wa{background:linear-gradient(135deg,#0f3d2e,#1fa36b)}
+  .thumb.wa i{position:absolute;height:22px;border-radius:12px;background:rgba(255,255,255,.85)}
+  .thumb.pizza{background:radial-gradient(circle at 50% 120%,#ffcf7a 0,transparent 55%),linear-gradient(180deg,#2a1810,#4a2416)}
+  .thumb .tag{position:absolute;top:16px;left:16px;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;background:rgba(255,253,248,.92);color:var(--ink);padding:6px 12px;border-radius:999px}
+  .body{padding:26px 28px 30px;flex:1;display:flex;flex-direction:column}
+  .work h3{font-family:Fraunces,serif;font-weight:500;font-size:1.5rem;margin-bottom:8px}
+  .work p{color:var(--muted);font-size:.98rem}
+  .meta{margin-top:auto;padding-top:20px;display:flex;justify-content:space-between;align-items:center;font-size:.85rem;color:var(--muted)}
+  .meta .go{color:var(--accent);font-weight:500}
+  .wide{grid-column:1 / -1}
+  .wide .thumb{height:180px}
+
+  .method{display:grid;grid-template-columns:repeat(3,1fr);gap:34px}
+  .method b{display:block;font-family:Fraunces,serif;font-weight:500;font-size:1.25rem;margin:12px 0 6px}
+  .method .n{font-size:.8rem;color:var(--accent);letter-spacing:.14em}
+  .method p{color:var(--muted)}
+
+  .contact{text-align:center;border-bottom:none}
+  .contact h2{font-size:clamp(2rem,5vw,3.6rem);font-weight:300;max-width:18ch;margin:0 auto}
+  .contact h2 em{font-style:italic;color:var(--accent)}
+  .contact .cta{justify-content:center}
+  footer{padding:30px 0 40px;text-align:center;font-size:.84rem;color:var(--muted)}
+
+  @media (max-width:760px){
+    .grid,.method{grid-template-columns:1fr}
+    nav a:not(:last-child){display:none}
+    .thumb{height:170px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="mark" href="#">Luca Bagnarol<span>.</span></a>
+    <nav><a href="#lavori">Lavori</a><a href="#metodo">Metodo</a><a href="#contatti">Contatti</a></nav>
+  </header>
+
+  <div class="hero">
+    <div class="kicker">Siti · Software · Automazioni con l’IA</div>
+    <h1>Strumenti digitali che partono da <em>come pensano</em> le persone.</h1>
+    <p class="lead">Sono laureato in psicologia e costruisco siti, software e automazioni con l’intelligenza artificiale. Prima capisco come i tuoi clienti scelgono e cosa li frena, poi progetto lo strumento che li accompagna fino al contatto.</p>
+    <div class="cta">
+      <a class="btn main" href="#lavori">Guarda i lavori ↓</a>
+      <a class="btn ghost" href="https://wa.me/393406431103" target="_blank" rel="noopener">Scrivimi su WhatsApp ↗</a>
+    </div>
+  </div>
+
+  <section id="lavori">
+    <div class="head"><h2>Lavori</h2><p>Progetti reali, alcuni online e altri riservati ai clienti.</p></div>
+    <div class="grid">
+      <a class="work" href="/mesztis/">
+        <div class="thumb mesztis"><span class="tag">Online</span></div>
+        <div class="body">
+          <h3>Mesztis</h3>
+          <p>Sito di presentazione in 3D per un’offerta di siti, software e gestione social. Il visitatore attraversa tre portali, dice cosa cerca e sceglie come farsi ricontattare.</p>
+          <div class="meta"><span>Three.js · WebGL · design</span><span class="go">Apri →</span></div>
+        </div>
+      </a>
+      <a class="work" href="/agisci/">
+        <div class="thumb agisci"><span class="tag">Online</span></div>
+        <div class="body">
+          <h3>AGISCI</h3>
+          <p>Un percorso guidato, una domanda alla volta, per chi ha un problema e non sa da dove partire. Risposte anche a voce, riepilogo finale e videoconsulenza a pagamento.</p>
+          <div class="meta"><span>UX · psicologia della scelta</span><span class="go">Apri →</span></div>
+        </div>
+      </a>
+      <div class="work">
+        <div class="thumb buyer"><span class="tag">Riservato</span><i style="height:35%"></i><i style="height:60%"></i><i style="height:45%"></i><i style="height:80%"></i><i style="height:65%"></i><i style="height:95%"></i></div>
+        <div class="body">
+          <h3>Ricerca clienti B2B</h3>
+          <p>Software web per un’azienda vinicola: cerca in automatico importatori e distributori in Italia e all’estero, li valuta con l’IA e prepara elenchi, mail e fogli di lavoro per il commerciale.</p>
+          <div class="meta"><span>Python · Flask · IA generativa</span><span>Progetto privato</span></div>
+        </div>
+      </div>
+      <div class="work">
+        <div class="thumb wa"><span class="tag">Prototipo</span><i style="left:24px;top:70px;width:46%"></i><i style="right:24px;top:106px;width:38%"></i><i style="left:24px;top:142px;width:52%"></i></div>
+        <div class="body">
+          <h3>Assistente WhatsApp</h3>
+          <p>Il cliente scrive su WhatsApp, anche con foto, video o file. Un agente IA capisce il problema e lo smista subito alla soluzione o alla persona giusta.</p>
+          <div class="meta"><span>n8n · agenti IA</span><span>In sviluppo</span></div>
+        </div>
+      </div>
+      <div class="work wide">
+        <div class="thumb pizza"><span class="tag">Demo per un locale</span></div>
+        <div class="body">
+          <h3>Sito per una pizzeria del Vicentino</h3>
+          <p>Lo preparo prima di presentarmi: arrivo dal titolare con il sito già fatto, terrazza, menu e prenotazioni compresi. Va online solo se gli piace.</p>
+          <div class="meta"><span>Sito vetrina · mobile first</span><span>Mostrato su richiesta</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="metodo">
+    <div class="head"><h2>Come lavoro</h2><p>Il punto di partenza non è la tecnologia, ma chi la userà.</p></div>
+    <div class="method">
+      <div><span class="n">01</span><b>Ascolto</b><p>Capisco l’attività, i clienti e il punto in cui oggi si perdono: una telefonata a vuoto, un modulo troppo lungo, un messaggio senza risposta.</p></div>
+      <div><span class="n">02</span><b>Costruisco in fretta</b><p>Una prima versione funzionante arriva in tempi brevi, da provare subito sul campo invece che da immaginare.</p></div>
+      <div><span class="n">03</span><b>Miglioro con i dati</b><p>Guardo dove le persone si fermano e cosa scelgono, poi rifinisco. Ogni modifica ha un motivo.</p></div>
+    </div>
+  </section>
+
+  <section class="contact" id="contatti">
+    <div class="kicker">Contatti</div>
+    <h2>Hai un’idea o un problema da <em>risolvere</em>?</h2>
+    <div class="cta">
+      <a class="btn main" href="https://wa.me/393406431103" target="_blank" rel="noopener">WhatsApp ↗</a>
+      <a class="btn ghost" href="tel:+393406431103">Chiama: 340 643 1103</a>
+      <a class="btn ghost" href="/agisci/">Raccontamelo su AGISCI →</a>
+    </div>
+  </section>
+</div>
+<footer>© <span id="y"></span> Luca Bagnarol</footer>
+<script>document.getElementById('y').textContent = new Date().getFullYear();</script>
+</body>
+</html>
